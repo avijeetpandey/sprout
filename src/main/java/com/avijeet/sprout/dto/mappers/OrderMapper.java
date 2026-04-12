@@ -8,7 +8,7 @@ import com.avijeet.sprout.entities.OrderItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface OrderMapper {
     OrderResponseDto toResponseDto(Order order);
     OrderItemResponseDto toItemResponseDto(OrderItem orderItem);

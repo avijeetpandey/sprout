@@ -6,7 +6,7 @@ import com.avijeet.sprout.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface UserMapper {
     UserResponseDto toDto(User user);
 

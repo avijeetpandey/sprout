@@ -2,7 +2,6 @@ package com.avijeet.sprout.services;
 
 import com.avijeet.sprout.dto.ProductRequestDto;
 import com.avijeet.sprout.dto.ProductResponseDto;
-import com.avijeet.sprout.dto.mappers.ProductMapper;
 import com.avijeet.sprout.entities.Product;
 import com.avijeet.sprout.exceptions.MethodArgumentNotValidException;
 import com.avijeet.sprout.exceptions.ProductAlreadyExistsException;
@@ -21,7 +20,6 @@ import java.util.Optional;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
-    private final ProductMapper productMapper;
 
     /**
      * Adding new product into the ecosystem
@@ -37,8 +35,8 @@ public class ProductService {
             throw new MethodArgumentNotValidException("Not a valid request to save the product");
         }
 
-        Product product = productMapper.toEntity(dto);
-        ProductResponseDto savedProduct = productMapper.toDto(productRepository.save(product));
+        Product product = toEntity(dto);
+        ProductResponseDto savedProduct = toDto(productRepository.save(product));
 
         log.info("Product created with id {} ", savedProduct.id());
 
@@ -53,7 +51,7 @@ public class ProductService {
             throw new MethodArgumentNotValidException("Invalid id");
         }
         Optional<Product> optionalProduct = productRepository.findById(id);
-        return optionalProduct.map(productMapper::toDto).orElse(null);
+        return optionalProduct.map(this::toDto).orElse(null);
 
     }
 
@@ -74,6 +72,29 @@ public class ProductService {
      * get all products
      */
     public List<ProductResponseDto> getAllProducts() {
-        return productRepository.findAll().stream().map(productMapper::toDto).toList();
+        return productRepository.findAll().stream().map(this::toDto).toList();
+    }
+
+    private ProductResponseDto toDto(Product product) {
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getSku(),
+                product.getProductType(),
+                product.getPrice(),
+                product.getStockQuantity()
+        );
+    }
+
+    private Product toEntity(ProductRequestDto dto) {
+        return Product.builder()
+                .name(dto.name())
+                .description(dto.description())
+                .sku(dto.sku())
+                .productType(dto.productType())
+                .price(dto.price())
+                .stockQuantity(dto.stockQuantity())
+                .build();
     }
 }

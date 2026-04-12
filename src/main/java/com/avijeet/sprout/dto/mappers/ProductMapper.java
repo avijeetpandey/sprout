@@ -6,7 +6,7 @@ import com.avijeet.sprout.entities.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface ProductMapper {
     ProductResponseDto toDto(Product product);
 
