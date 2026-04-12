@@ -37,7 +37,7 @@ public class OrderService {
         String cartKey = "cart:" + requestDto.userId();
         Object rawCart = redisTemplate.opsForValue().get(cartKey);
 
-        if(rawCart == null) {
+        if (rawCart == null) {
             throw new IllegalStateException("Cart is empty or does not exist");
         }
 
@@ -48,7 +48,7 @@ public class OrderService {
         log.info("Processing payment for user {}", requestDto.userId());
         boolean paymentSuccess = true;
 
-        if(!paymentSuccess) {
+        if (!paymentSuccess) {
             throw new RuntimeException("Payment failed");
         }
 
@@ -64,7 +64,7 @@ public class OrderService {
             Product product = productRepository.findById(item.productId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            if(product.getStockQuantity() < item.quantity()) {
+            if (product.getStockQuantity() < item.quantity()) {
                 throw new RuntimeException("Insufficient stocks for " + product.getId());
             }
 
@@ -85,7 +85,7 @@ public class OrderService {
 
         KafkaTemplate<String, Object> kafkaTemplate = kafkaTemplateProvider.getIfAvailable();
         if (kafkaTemplate != null) {
-            kafkaTemplate.send("order-notification", new OrderNotificationEvent(requestDto.email(), savedOrder.getOrderNumber()));
+            kafkaTemplate.send("order-notification",  savedOrder.getOrderNumber(), new OrderNotificationEvent(requestDto.email(), savedOrder.getOrderNumber()));
         } else {
             log.info("Kafka is disabled; skipping order notification publish for order {}", savedOrder.getOrderNumber());
         }
