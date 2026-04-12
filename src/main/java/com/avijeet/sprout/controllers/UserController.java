@@ -3,6 +3,7 @@ package com.avijeet.sprout.controllers;
 import com.avijeet.sprout.config.api.ApiResponse;
 import com.avijeet.sprout.config.controller.BaseController;
 import com.avijeet.sprout.constants.ApiConstants;
+import com.avijeet.sprout.dto.AddressRequestDto;
 import com.avijeet.sprout.dto.UserRequestDto;
 import com.avijeet.sprout.dto.UserResponseDto;
 import com.avijeet.sprout.services.UserService;
@@ -30,5 +31,13 @@ public class UserController extends BaseController {
     public  ResponseEntity<ApiResponse<Boolean>> blockUser(@RequestParam String email) {
         boolean result = userService.blockUserAccount(email);
         return ok(ApiConstants.DONE_MESSAGE,result);
+    }
+
+    @PostMapping("/address/{userId}")
+    public ResponseEntity<ApiResponse<String>> addAddress(
+            @PathVariable Long userId,
+            @RequestBody AddressRequestDto addressRequestDto) {
+        userService.addAddress(userId, addressRequestDto);
+        return ok(ApiConstants.DONE_MESSAGE, "Address added successfully");
     }
 }
