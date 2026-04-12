@@ -1,13 +1,16 @@
 package com.avijeet.sprout.services;
 
+import com.avijeet.sprout.dto.AddressRequestDto;
 import com.avijeet.sprout.dto.UserRequestDto;
 import com.avijeet.sprout.dto.UserResponseDto;
 import com.avijeet.sprout.dto.mappers.UserMapper;
+import com.avijeet.sprout.entities.Address;
 import com.avijeet.sprout.entities.User;
 import com.avijeet.sprout.enums.Role;
 import com.avijeet.sprout.exceptions.UserAlreadyExistsException;
 import com.avijeet.sprout.exceptions.UserDoesNotExists;
 import com.avijeet.sprout.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -70,5 +73,23 @@ public class UserService {
         log.info("User account for {} has been blocked", email);
 
         return true;
+    }
+
+    @Transactional
+    public void addAddress(Long userId, AddressRequestDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserDoesNotExists("User not found"));
+
+        Address address = Address.builder()
+                .street(dto.street())
+                .city(dto.city())
+                .zipCode(dto.zipCode())
+                .country(dto.country())
+                .addressType(dto.addressType())
+                .user(user)
+                .build();
+
+        user.getAddresses().add(address);
+        userRepository.save(user);
     }
 }
