@@ -3,7 +3,6 @@ package com.avijeet.sprout.services;
 import com.avijeet.sprout.dto.AddressRequestDto;
 import com.avijeet.sprout.dto.UserRequestDto;
 import com.avijeet.sprout.dto.UserResponseDto;
-import com.avijeet.sprout.dto.mappers.UserMapper;
 import com.avijeet.sprout.entities.Address;
 import com.avijeet.sprout.entities.User;
 import com.avijeet.sprout.enums.Role;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
 
@@ -42,7 +40,7 @@ public class UserService {
 
         log.info("User with email {}, created successfully", createdUser.getEmail());
 
-        return userMapper.toDto(userRepository.save(createdUser));
+        return toDto(userRepository.save(createdUser));
     }
 
     public UserResponseDto getUserDetailsByEmail(String email) {
@@ -52,7 +50,7 @@ public class UserService {
             throw new UserDoesNotExists("User with email" + email + "does not exist");
         }
 
-        return userMapper.toDto(user);
+        return toDto(user);
     }
 
     public boolean blockUserAccount(String email) {
@@ -91,5 +89,14 @@ public class UserService {
 
         user.getAddresses().add(address);
         userRepository.save(user);
+    }
+
+    private UserResponseDto toDto(User user) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getRole() == null ? null : user.getRole().name(),
+                user.isAccountNonLocked()
+        );
     }
 }
