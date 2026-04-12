@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ObjectProvider<KafkaTemplate<String, Object>> kafkaTemplateProvider;
 
     @Transactional
     public OrderResponseDto placeOrder(OrderRequestDto requestDto) {
@@ -81,7 +82,13 @@ public class OrderService {
         order.setItems(orderItems);
         Order savedOrder = orderRepository.save(order);
         redisTemplate.delete(cartKey);
-        kafkaTemplate.send("order-notification", new OrderNotificationEvent(requestDto.email(), savedOrder.getOrderNumber()));
+
+        KafkaTemplate<String, Object> kafkaTemplate = kafkaTemplateProvider.getIfAvailable();
+        if (kafkaTemplate != null) {
+            kafkaTemplate.send("order-notification", new OrderNotificationEvent(requestDto.email(), savedOrder.getOrderNumber()));
+        } else {
+            log.info("Kafka is disabled; skipping order notification publish for order {}", savedOrder.getOrderNumber());
+        }
 
         return new OrderResponseDto(savedOrder.getOrderNumber(), savedOrder.getTotalAmount(), savedOrder.getStatus(), savedOrder.getCreatedAt());
     }
