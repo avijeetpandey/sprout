@@ -120,12 +120,7 @@ public class UserServiceTest {
 
         // Assert
         assertTrue(result);
-
-        // CHANGE THIS: We now WANT to verify that save was called once
-        // because the status changed from true to false.
         verify(userRepository, times(1)).save(any(User.class));
-
-        // Verify that the value was actually flipped to false
         assertFalse(sampleUser.isAccountNonLocked());
     }
 
