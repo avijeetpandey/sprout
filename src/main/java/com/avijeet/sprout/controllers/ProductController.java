@@ -5,7 +5,6 @@ import com.avijeet.sprout.config.controller.BaseController;
 import com.avijeet.sprout.constants.ApiConstants;
 import com.avijeet.sprout.dto.ProductRequestDto;
 import com.avijeet.sprout.dto.ProductResponseDto;
-import com.avijeet.sprout.repository.ProductRepository;
 import com.avijeet.sprout.services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
