@@ -12,6 +12,9 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sprout?sslmode=disable
       SPRING_DATASOURCE_USERNAME: postgres
@@ -19,6 +22,7 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
     restart: unless-stopped
 
   db:
@@ -47,6 +51,19 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.6
+    container_name: sprout-es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
     restart: unless-stopped
 
   kafka:
