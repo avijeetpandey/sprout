@@ -1,9 +1,10 @@
 package com.avijeet.sprout.config.kafka;
 
 import com.avijeet.sprout.dto.OrderNotificationEvent;
+import com.avijeet.sprout.entities.Product;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer; // <-- IMPORTANT
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -33,6 +34,7 @@ public class KafkaConfig {
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
@@ -88,6 +90,29 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, String> bulkKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(bulkConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, Product> productConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "sprout-search-sync-group");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new StringDeserializer(),
+                new JsonDeserializer<>(Product.class, false)
+        );
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Product> productKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, Product> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(productConsumerFactory());
         return factory;
     }
 
