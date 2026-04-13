@@ -10,6 +10,10 @@ import com.avijeet.sprout.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,8 +75,10 @@ public class ProductService {
     /**
      * get all products
      */
-    public List<ProductResponseDto> getAllProducts() {
-        return productRepository.findAll().stream().map(this::toDto).toList();
+    public Page<ProductResponseDto> getAllProducts(int page, int size) {
+        Pageable pageable = PageRequest.of(page,size, Sort.by("id").ascending());
+
+        return productRepository.findAll(pageable).map(this::toDto);
     }
 
     private ProductResponseDto toDto(Product product) {
