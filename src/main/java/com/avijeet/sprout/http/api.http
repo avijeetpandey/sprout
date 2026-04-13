@@ -1,0 +1,72 @@
+### Sprout E-Commerce Backend - Fresh Start (Phase 1-3)
+### Port: 9000 | IDs reset to start from 1
+
+# @name CreateUser
+POST http://localhost:9000/api/v1/user
+Content-Type: application/json
+
+{
+  "email": "avijeet.experty@example.com",
+  "password": "Password321!"
+}
+
+###
+
+# @name AddShippingAddress
+# Assumes User ID 1 is returned from previous request
+POST http://localhost:9000/api/v1/user/address/2
+Content-Type: application/json
+
+{
+  "street": "303 Config Road",
+  "city": "Bengaluru",
+  "zipCode": "560003",
+  "country": "India",
+  "addressType": "SHIPPING"
+}
+
+###
+
+# @name AddProductToCatalog
+# This will be Product ID 1
+POST http://localhost:9000/api/v1/products/add
+Content-Type: application/json
+
+{
+  "name": "SteelSeries Apex Pro",
+  "description": "OMNIPOINT 2.0 Keyboard",
+  "price": 189.99,
+  "stockQuantity": 15,
+  "sku": "SS-APEX-003",
+  "productType": "ELECTRONICS"
+}
+
+###
+
+# @name AddToCart
+# Link Product ID 1 to User ID 1
+POST http://localhost:9000/api/v1/orders/cart/add/1
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "productName": "SteelSeries Apex Pro",
+  "quantity": 1,
+  "price": 189.99
+}
+
+###
+
+# @name Checkout
+# Using User ID 1 and Address ID 1
+POST http://localhost:9000/api/v1/orders/checkout
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "email": "avijeet.expert@example.com",
+  "shippingAddressId": 1
+}
+
+###
+GET http://localhost:9000/api/v1/products
