@@ -10,6 +10,11 @@ import com.avijeet.sprout.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +25,7 @@ import java.util.Optional;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     /**
      * Adding new product into the ecosystem
@@ -39,6 +45,16 @@ public class ProductService {
         ProductResponseDto savedProduct = toDto(productRepository.save(product));
 
         log.info("Product created with id {} ", savedProduct.id());
+
+        // sending kafka for search index
+        kafkaTemplate.send("product-search-sync", savedProduct.id().toString(), savedProduct)
+                .whenComplete((result, ex) -> {
+                   if(ex == null) {
+                       log.info("Sent product sync event for id: {}", savedProduct.id().toString());
+                   } else  {
+                       log.error("Faied to send sync event ", ex);
+                   }
+                });
 
         return savedProduct;
     }
@@ -71,8 +87,10 @@ public class ProductService {
     /**
      * get all products
      */
-    public List<ProductResponseDto> getAllProducts() {
-        return productRepository.findAll().stream().map(this::toDto).toList();
+    public Page<ProductResponseDto> getAllProducts(int page, int size) {
+        Pageable pageable = PageRequest.of(page,size, Sort.by("id").ascending());
+
+        return productRepository.findAll(pageable).map(this::toDto);
     }
 
     private ProductResponseDto toDto(Product product) {

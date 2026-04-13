@@ -9,10 +9,10 @@ import com.avijeet.sprout.services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -27,7 +27,11 @@ public class ProductController extends BaseController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductResponseDto>>> findAll() {
-        return ok(ApiConstants.DONE_MESSAGE, productService.getAllProducts());
+    public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        log.info("Fetching products for page {} and size {} ", page, size);
+        return ok(ApiConstants.DONE_MESSAGE, productService.getAllProducts(page, size));
     }
 }
